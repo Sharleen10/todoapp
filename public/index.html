@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List App</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>TaskMaster</h1>
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search tasks...">
+        <button id="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar">
+        <nav>
+          <ul>
+            <li class="active"><a href="#" data-view="all"><i class="fas fa-list"></i> All Tasks</a></li>
+            <li><a href="#" data-view="today"><i class="fas fa-calendar-day"></i> Today</a></li>
+            <li><a href="#" data-view="upcoming"><i class="fas fa-calendar-week"></i> Upcoming</a></li>
+            <li><a href="#" data-view="important"><i class="fas fa-star"></i> Important</a></li>
+            <li><a href="#" data-view="completed"><i class="fas fa-check-circle"></i> Completed</a></li>
+          </ul>
+          
+          <div class="projects-section">
+            <h3>Projects <button id="add-project-btn"><i class="fas fa-plus"></i></button></h3>
+            <ul id="projects-list"></ul>
+          </div>
+          
+          <div class="labels-section">
+            <h3>Labels <button id="add-label-btn"><i class="fas fa-plus"></i></button></h3>
+            <ul id="labels-list"></ul>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="task-area">
+        <div class="tasks-header">
+          <h2 id="current-view-title">All Tasks</h2>
+          <div class="task-controls">
+            <select id="sort-select">
+              <option value="dueDate">Sort by Due Date</option>
+              <option value="priority">Sort by Priority</option>
+              <option value="createdAt">Sort by Created Date</option>
+              <option value="title">Sort by Title</option>
+            </select>
+            <button id="add-task-btn" class="primary-btn">Add Task</button>
+          </div>
+        </div>
+
+        <div id="tasks-container" class="tasks-container"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Task Detail Modal -->
+  <div id="task-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <form id="task-form">
+        <input type="hidden" id="task-id">
+        <div class="form-group">
+          <label for="task-title">Task Title</label>
+          <input type="text" id="task-title" required placeholder="What needs to be done?">
+        </div>
+        <div class="form-group">
+          <label for="task-description">Description</label>
+          <textarea id="task-description" placeholder="Add details about this task..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-due-date">Due Date</label>
+            <input type="datetime-local" id="task-due-date">
+          </div>
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <select id="task-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-project">Project</label>
+            <select id="task-project"></select>
+          </div>
+          <div class="form-group">
+            <label for="task-section">Section</label>
+            <input type="text" id="task-section" placeholder="Optional section">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="task-labels">Labels (comma separated)</label>
+          <input type="text" id="task-labels" placeholder="work, urgent, email, etc.">
+        </div>
+        <div class="form-group recurring-container">
+          <label>
+            <input type="checkbox" id="task-recurring"> This is a recurring task
+          </label>
+          <div id="recurring-options" class="hidden">
+            <select id="recurring-type">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="custom">Custom</option>
+            </select>
+            <div id="custom-recurring" class="hidden">
+              <input type="text" id="custom-recurring-pattern" placeholder="Every X days/weeks/months">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Reminders</label>
+          <div id="reminders-container">
+            <button type="button" id="add-reminder-btn">Add Reminder</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Subtasks</label>
+          <div id="subtasks-container">
+            <div class="subtask-input-container">
+              <input type="text" class="subtask-input" placeholder="Add a subtask...">
+              <button type="button" class="add-subtask-btn">Add</button>
+            </div>
+            <ul id="subtasks-list"></ul>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="delete-task-btn" class="danger-btn hidden">Delete</button>
+          <button type="submit" class="primary-btn">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
