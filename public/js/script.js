@@ -2,8 +2,12 @@ class TaskManager {
     constructor() {
       // Initialize storage and key elements
       this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-      this.projects = JSON.parse(localStorage.getItem('projects')) || [];
-      this.labels = JSON.parse(localStorage.getItem('labels')) || [];
+      
+      // Add default projects if none exist in local storage
+      this.projects = JSON.parse(localStorage.getItem('projects')) || ['Work', 'Personal', 'Shopping'];
+      
+      // Add default labels
+      this.labels = JSON.parse(localStorage.getItem('labels')) || ['Important', 'Urgent', 'Quick Task'];
   
       // DOM Element References
       this.taskContainer = document.getElementById('tasks-container');
@@ -24,6 +28,9 @@ class TaskManager {
       this.renderTasks();
       this.renderProjects();
       this.renderLabels();
+  
+      // Save initial projects to local storage if not already there
+      this.saveToStorage();
     }
   
     // Event Binding Method
@@ -54,10 +61,17 @@ class TaskManager {
       // Reminder and Subtask Interactions
       document.getElementById('add-reminder-btn').addEventListener('click', () => this.addReminder());
       document.querySelector('.add-subtask-btn').addEventListener('click', () => this.addSubtask());
+  
+      // Subtask Remove Delegation
+      document.getElementById('subtasks-list').addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-subtask')) {
+          e.target.closest('.subtask-item').remove();
+        }
+      });
     }
   
     // Task Creation and Management
-    async saveTask(e) {
+    saveTask(e) {
       e.preventDefault();
       const taskData = this.collectTaskFormData();
       
@@ -85,7 +99,9 @@ class TaskManager {
         priority: document.getElementById('task-priority').value,
         project: document.getElementById('task-project').value,
         section: document.getElementById('task-section').value,
-        labels: document.getElementById('task-labels').value.split(',').map(l => l.trim()),
+        labels: document.getElementById('task-labels').value 
+          ? document.getElementById('task-labels').value.split(',').map(l => l.trim())
+          : [],
         recurring: document.getElementById('task-recurring').checked,
         recurringType: document.getElementById('recurring-type').value,
         customRecurringPattern: document.getElementById('custom-recurring-pattern').value,
@@ -118,7 +134,7 @@ class TaskManager {
         <div class="task-content">
           <h3 class="task-title">${task.title}</h3>
           <div class="task-details">
-            <span class="task-date"><i class="fas fa-calendar"></i>${task.dueDate}</span>
+            <span class="task-date"><i class="fas fa-calendar"></i>${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</span>
             ${task.project ? `<span class="task-project"><i class="fas fa-folder"></i>${task.project}</span>` : ''}
             <span class="task-priority">${task.priority.toUpperCase()}</span>
           </div>
@@ -177,7 +193,11 @@ class TaskManager {
       const sortBy = this.sortSelect.value;
       const sortedTasks = [...this.tasks].sort((a, b) => {
         switch(sortBy) {
-          case 'dueDate': return new Date(a.dueDate) - new Date(b.dueDate);
+          case 'dueDate': 
+            // Handle tasks without due dates
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return new Date(a.dueDate) - new Date(b.dueDate);
           case 'priority': 
             const priorityOrder = ['low', 'medium', 'high', 'urgent'];
             return priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority);
@@ -211,11 +231,19 @@ class TaskManager {
     }
   
     renderProjects() {
+      // Update sidebar projects list
       this.projectsList.innerHTML = this.projects
         .map(project => `
           <li>
             <a href="#" data-project="${project}">${project}</a>
           </li>
+        `).join('');
+  
+      // Populate project dropdown in task modal
+      const projectSelect = document.getElementById('task-project');
+      projectSelect.innerHTML = `<option value="">Select Project</option>` + 
+        this.projects.map(project => `
+          <option value="${project}">${project}</option>
         `).join('');
     }
   
@@ -242,13 +270,33 @@ class TaskManager {
       // Reset and populate form
       this.taskForm.reset();
       document.getElementById('task-id').value = '';
+      document.getElementById('subtasks-list').innerHTML = '';
+      document.getElementById('recurring-options').classList.add('hidden');
       
       if (task) {
         // Populate form with existing task data
         Object.keys(task).forEach(key => {
           const field = document.getElementById(`task-${key}`);
-          if (field) field.value = task[key];
+          if (field) {
+            field.value = task[key];
+          }
         });
+  
+        // Populate subtasks
+        if (task.subtasks) {
+          const subtasksList = document.getElementById('subtasks-list');
+          task.subtasks.forEach(subtask => {
+            const subtaskItem = document.createElement('li');
+            subtaskItem.classList.add('subtask-item');
+            subtaskItem.innerHTML = `
+              <input type="checkbox" ${subtask.completed ? 'checked' : ''}>
+              <span>${subtask.text}</span>
+              <button type="button" class="remove-subtask">✕</button>
+            `;
+            subtasksList.appendChild(subtaskItem);
+          });
+        }
+  
         document.getElementById('delete-task-btn').classList.remove('hidden');
       }
   
@@ -265,9 +313,12 @@ class TaskManager {
     }
   
     deleteTask(taskId) {
-      this.tasks = this.tasks.filter(task => task.id !== taskId);
-      this.saveToStorage();
-      this.renderTasks();
+      if (confirm('Are you sure you want to delete this task?')) {
+        this.tasks = this.tasks.filter(task => task.id !== taskId);
+        this.saveToStorage();
+        this.renderTasks();
+        this.closeTaskModal();
+      }
     }
   
     toggleTaskCompletion(task, completed) {
