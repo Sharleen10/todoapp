@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do List App</title>
+  <meta name="description" content="TaskMaster is a simple to-do list app that helps you organize your tasks and get things done.">
+  <meta name="keywords" content="to-do list, task manager, task app, task list, task organizer, task planner, task scheduler, task tracker">
+  <meta name="author" content="Sharleen Shabangu">
+  <title>TaskMaster - To-Do List App</title>
   <link rel="icon" type="image/x-icon" href="favicontodo.jpg">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,8 +16,9 @@
     <header>
       <h1>TaskMaster</h1>
       <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search tasks...">
-        <button id="search-btn"><i class="fas fa-search"></i></button>
+        <label for="search-input" class="sr-only">Search tasks</label>
+        <input type="text" id="search-input" name="search-input" placeholder="Search tasks...">
+        <button id="search-btn" aria-label="Search tasks"><i class="fas fa-search"></i></button>
       </div>
     </header>
 
@@ -30,12 +34,12 @@
           </ul>
           
           <div class="projects-section">
-            <h3>Projects <button id="add-project-btn"><i class="fas fa-plus"></i></button></h3>
+            <h3>Projects <button id="add-project-btn" aria-label="Add new project"><i class="fas fa-plus"></i></button></h3>
             <ul id="projects-list"></ul>
           </div>
           
           <div class="labels-section">
-            <h3>Labels <button id="add-label-btn"><i class="fas fa-plus"></i></button></h3>
+            <h3>Labels <button id="add-label-btn" aria-label="Add new label"><i class="fas fa-plus"></i></button></h3>
             <ul id="labels-list"></ul>
           </div>
         </nav>
@@ -45,7 +49,8 @@
         <div class="tasks-header">
           <h2 id="current-view-title">All Tasks</h2>
           <div class="task-controls">
-            <select id="sort-select">
+            <label for="sort-select" class="sr-only">Sort tasks</label>
+            <select id="sort-select" name="sort-select">
               <option value="dueDate">Sort by Due Date</option>
               <option value="priority">Sort by Priority</option>
               <option value="createdAt">Sort by Created Date</option>
@@ -61,27 +66,32 @@
   </div>
 
   <!-- Task Detail Modal -->
-  <div id="task-modal" class="modal">
+  <div id="task-modal" class="modal" role="dialog" aria-labelledby="task-modal-title">
     <div class="modal-content">
-      <span class="close-modal">&times;</span>
+      <button class="close-modal" aria-label="Close modal">&times;</button>
       <form id="task-form">
-        <input type="hidden" id="task-id">
+        <h2 id="task-modal-title">Task Details</h2>
+        <input type="hidden" id="task-id" name="task-id">
+        
         <div class="form-group">
           <label for="task-title">Task Title</label>
-          <input type="text" id="task-title" required placeholder="What needs to be done?">
+          <input type="text" id="task-title" name="task-title" required placeholder="What needs to be done?">
         </div>
+        
         <div class="form-group">
           <label for="task-description">Description</label>
-          <textarea id="task-description" placeholder="Add details about this task..."></textarea>
+          <textarea id="task-description" name="task-description" placeholder="Add details about this task..."></textarea>
         </div>
+        
         <div class="form-row">
           <div class="form-group">
             <label for="task-due-date">Due Date</label>
-            <input type="datetime-local" id="task-due-date">
+            <input type="datetime-local" id="task-due-date" name="task-due-date">
           </div>
+          
           <div class="form-group">
             <label for="task-priority">Priority</label>
-            <select id="task-priority">
+            <select id="task-priority" name="task-priority">
               <option value="low">Low</option>
               <option value="medium" selected>Medium</option>
               <option value="high">High</option>
@@ -89,52 +99,59 @@
             </select>
           </div>
         </div>
+        
         <div class="form-row">
           <div class="form-group">
             <label for="task-project">Project</label>
-            <select id="task-project"></select>
+            <select id="task-project" name="task-project"></select>
           </div>
+          
           <div class="form-group">
             <label for="task-section">Section</label>
-            <input type="text" id="task-section" placeholder="Optional section">
+            <input type="text" id="task-section" name="task-section" placeholder="Optional section">
           </div>
         </div>
+        
         <div class="form-group">
           <label for="task-labels">Labels (comma separated)</label>
-          <input type="text" id="task-labels" placeholder="work, urgent, email, etc.">
+          <input type="text" id="task-labels" name="task-labels" placeholder="work, urgent, email, etc.">
         </div>
+        
         <div class="form-group recurring-container">
           <label>
-            <input type="checkbox" id="task-recurring"> This is a recurring task
+            <input type="checkbox" id="task-recurring" name="task-recurring"> This is a recurring task
           </label>
           <div id="recurring-options" class="hidden">
-            <select id="recurring-type">
+            <select id="recurring-type" name="recurring-type">
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
               <option value="custom">Custom</option>
             </select>
             <div id="custom-recurring" class="hidden">
-              <input type="text" id="custom-recurring-pattern" placeholder="Every X days/weeks/months">
+              <input type="text" id="custom-recurring-pattern" name="custom-recurring-pattern" placeholder="Every X days/weeks/months">
             </div>
           </div>
         </div>
+        
         <div class="form-group">
           <label>Reminders</label>
           <div id="reminders-container">
             <button type="button" id="add-reminder-btn">Add Reminder</button>
           </div>
         </div>
+        
         <div class="form-group">
           <label>Subtasks</label>
           <div id="subtasks-container">
             <div class="subtask-input-container">
-              <input type="text" class="subtask-input" placeholder="Add a subtask...">
+              <input type="text" class="subtask-input" name="subtask-input" placeholder="Add a subtask...">
               <button type="button" class="add-subtask-btn">Add</button>
             </div>
             <ul id="subtasks-list"></ul>
           </div>
         </div>
+        
         <div class="form-actions">
           <button type="button" id="delete-task-btn" class="danger-btn hidden">Delete</button>
           <button type="submit" class="primary-btn">Save Task</button>
