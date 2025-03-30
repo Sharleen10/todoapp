@@ -62,6 +62,7 @@ mongoose.connection.on('disconnected', () => {
 
 // Task Schema
 const TaskSchema = new mongoose.Schema({
+
   title: { type: String, required: true },
   description: { type: String },
   dueDate: { type: Date },
@@ -80,8 +81,20 @@ const TaskSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false }
 });
 
+// Project Schema
+const ProjectSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true }
+});
+
+// Label Schema
+const LabelSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true }
+});
+
 // Models
 const Task = mongoose.model('Task', TaskSchema);
+const Project = mongoose.model('Project', ProjectSchema);
+const Label = mongoose.model('Label', LabelSchema);
 
 // Task Routes
 app.get('/api/tasks', async (req, res) => {
@@ -122,6 +135,46 @@ app.delete('/api/tasks/:id', async (req, res) => {
     res.json({ message: 'Task deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Project Routes
+app.get('/api/projects', async (req, res) => {
+  try {
+    const projects = await Project.find();
+    res.json(projects);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/projects', async (req, res) => {
+  const project = new Project(req.body);
+  try {
+    const newProject = await project.save();
+    res.status(201).json(newProject);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Label Routes
+app.get('/api/labels', async (req, res) => {
+  try {
+    const labels = await Label.find();
+    res.json(labels);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/labels', async (req, res) => {
+  const label = new Label(req.body);
+  try {
+    const newLabel = await label.save();
+    res.status(201).json(newLabel);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 
