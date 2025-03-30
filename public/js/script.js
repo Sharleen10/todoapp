@@ -41,6 +41,7 @@ class TaskManager {
     // View Navigation Events
     document.querySelectorAll('.sidebar a[data-view]').forEach(link => {
       link.addEventListener('click', (e) => {
+        e.preventDefault();
         this.currentView = e.target.dataset.view;
         document.getElementById('current-view-title').textContent = 
           e.target.textContent;
@@ -73,6 +74,11 @@ class TaskManager {
     });
   }
 
+  // Filter Tasks based on current view
+  filterTasks() {
+    this.renderTasks();
+  }
+
   // Fetch Tasks from Backend
   async fetchTasks() {
     try {
@@ -88,6 +94,7 @@ class TaskManager {
       }
 
       this.tasks = await response.json();
+      console.log('Fetched tasks:', this.tasks);
       this.renderTasks();
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -99,10 +106,17 @@ class TaskManager {
   async fetchProjects() {
     try {
       const response = await fetch(`${API_BASE_URL}/projects`);
-      this.projects = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      this.projects = Array.isArray(data) ? data : [];
+      console.log('Fetched projects:', this.projects);
       this.renderProjects();
     } catch (error) {
       console.error('Error fetching projects:', error);
+      this.projects = []; // Initialize as empty array if fetch fails
+      this.renderProjects();
     }
   }
 
@@ -110,10 +124,17 @@ class TaskManager {
   async fetchLabels() {
     try {
       const response = await fetch(`${API_BASE_URL}/labels`);
-      this.labels = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      this.labels = Array.isArray(data) ? data : [];
+      console.log('Fetched labels:', this.labels);
       this.renderLabels();
     } catch (error) {
       console.error('Error fetching labels:', error);
+      this.labels = []; // Initialize as empty array if fetch fails
+      this.renderLabels();
     }
   }
 
@@ -121,6 +142,7 @@ class TaskManager {
   async saveTask(e) {
     e.preventDefault();
     const taskData = this.collectTaskFormData();
+    console.log('Saving task data:', taskData);
     
     try {
       const url = taskData.id 
@@ -177,8 +199,10 @@ class TaskManager {
   }
 
   // Render Tasks with Filtering
-  renderTasks() {
-    let filteredTasks = [...this.tasks];
+  renderTasks(customTasks = null) {
+    let filteredTasks = customTasks || [...this.tasks];
+    console.log('Current view:', this.currentView);
+    console.log('All tasks before filtering:', filteredTasks);
 
     // Apply view-based filtering
     switch (this.currentView) {
@@ -200,10 +224,11 @@ class TaskManager {
         filteredTasks = filteredTasks.filter(task => task.priority === 'high' || task.priority === 'urgent');
         break;
       case 'completed':
-        filteredTasks = filteredTasks.filter(task => task.completed);
+        filteredTasks = filteredTasks.filter(task => task.completed === true);
         break;
     }
 
+    console.log('Filtered tasks:', filteredTasks);
     this.taskContainer.innerHTML = '';
     filteredTasks.forEach(task => {
       const taskElement = this.createTaskElement(task);
@@ -215,6 +240,12 @@ class TaskManager {
   createTaskElement(task) {
     const taskItem = document.createElement('div');
     taskItem.classList.add('task-item', `priority-${task.priority}`);
+    
+    // Add completed class if task is completed
+    if (task.completed) {
+      taskItem.classList.add('completed-task');
+    }
+    
     taskItem.innerHTML = `
       <div class="task-checkbox">
         <input type="checkbox" ${task.completed ? 'checked' : ''}>
@@ -242,7 +273,11 @@ class TaskManager {
     // Add event listeners for task actions
     taskItem.querySelector('.edit-task').addEventListener('click', () => this.editTask(task));
     taskItem.querySelector('.delete-task').addEventListener('click', () => this.deleteTask(task._id));
-    taskItem.querySelector('input[type="checkbox"]').addEventListener('change', (e) => this.toggleTaskCompletion(task, e.target.checked));
+    taskItem.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+      const isCompleted = e.target.checked;
+      console.log(`Toggling task ${task._id} completion to ${isCompleted}`);
+      this.toggleTaskCompletion(task, isCompleted);
+    });
 
     return taskItem;
   }
@@ -279,10 +314,18 @@ class TaskManager {
         body: JSON.stringify({ ...task, completed })
       });
 
-      if (response.ok) {
-        this.fetchTasks();
-      } else {
+      if (!response.ok) {
         throw new Error('Failed to update task completion');
+      }
+      
+      // Update the local task immediately
+      const taskIndex = this.tasks.findIndex(t => t._id === task._id);
+      if (taskIndex !== -1) {
+        this.tasks[taskIndex].completed = completed;
+        this.renderTasks();
+      } else {
+        // If local update fails, refresh all tasks
+        this.fetchTasks();
       }
     } catch (error) {
       console.error('Error updating task completion:', error);
@@ -310,6 +353,9 @@ class TaskManager {
         if (field) {
           if (key === 'labels') {
             field.value = task[key].join(', ');
+          } else if (key === 'recurring') {
+            field.checked = task[key];
+            document.getElementById('recurring-options').classList.toggle('hidden', !task[key]);
           } else {
             field.value = task[key];
           }
@@ -317,7 +363,7 @@ class TaskManager {
       });
 
       // Populate subtasks
-      if (task.subtasks) {
+      if (task.subtasks && task.subtasks.length > 0) {
         const subtasksList = document.getElementById('subtasks-list');
         task.subtasks.forEach(subtask => {
           const subtaskItem = document.createElement('li');
@@ -382,6 +428,17 @@ class TaskManager {
         </li>
       `).join('');
 
+    // Add event listeners to project links
+    document.querySelectorAll('#projects-list a[data-project]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const projectName = e.target.dataset.project;
+        this.currentView = 'project';
+        document.getElementById('current-view-title').textContent = `Project: ${projectName}`;
+        this.renderTasks(this.tasks.filter(task => task.project === projectName));
+      });
+    });
+
     // Populate project dropdown in task modal
     const projectSelect = document.getElementById('task-project');
     projectSelect.innerHTML = `<option value="">Select Project</option>` + 
@@ -392,35 +449,59 @@ class TaskManager {
 
   // Render Labels
   renderLabels() {
+    // Update sidebar labels list
     this.labelsList.innerHTML = this.labels
       .map(label => `
         <li>
           <a href="#" data-label="${label.name}">${label.name}</a>
         </li>
       `).join('');
+
+    // Add event listeners to label links
+    document.querySelectorAll('#labels-list a[data-label]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const labelName = e.target.dataset.label;
+        this.currentView = 'label';
+        document.getElementById('current-view-title').textContent = `Label: ${labelName}`;
+        this.renderTasks(this.tasks.filter(task => 
+          task.labels && task.labels.includes(labelName)
+        ));
+      });
+    });
   }
 
   // Search Tasks
   searchTasks() {
     const searchQuery = this.searchInput.value.toLowerCase().trim();
+    if (!searchQuery) {
+      // If search is cleared, revert to normal view
+      this.renderTasks();
+      return;
+    }
+    
     const filteredTasks = this.tasks.filter(task => 
       task.title.toLowerCase().includes(searchQuery) ||
       (task.description && task.description.toLowerCase().includes(searchQuery)) ||
-      task.labels.some(label => label.toLowerCase().includes(searchQuery))
+      (task.labels && task.labels.some(label => label.toLowerCase().includes(searchQuery)))
     );
+    
     this.renderTasks(filteredTasks);
   }
 
   // Sort Tasks
   sortTasks() {
     const sortBy = this.sortSelect.value;
-    this.tasks.sort((a, b) => {
+    
+    const sortedTasks = [...this.tasks].sort((a, b) => {
       switch(sortBy) {
         case 'dueDate':
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
           return new Date(a.dueDate) - new Date(b.dueDate);
         case 'priority':
-          const priorityOrder = ['urgent', 'high', 'medium', 'low'];
-          return priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority);
+          const priorityOrder = { 'urgent': 0, 'high': 1, 'medium': 2, 'low': 3 };
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
         case 'createdAt':
           return new Date(a.createdAt) - new Date(b.createdAt);
         case 'title':
@@ -429,60 +510,75 @@ class TaskManager {
           return 0;
       }
     });
-    this.renderTasks();
+    
+    this.renderTasks(sortedTasks);
   }
 
   // Add Project
   async addProject() {
     const projectName = prompt('Enter project name:');
-    if (projectName && !this.projects.some(p => p.name === projectName)) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/projects`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name: projectName })
-        });
+    if (!projectName || projectName.trim() === '') {
+      return;
+    }
+    
+    if (this.projects.some(p => p.name === projectName)) {
+      this.showErrorMessage('A project with this name already exists.');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: projectName })
+      });
 
-        if (response.ok) {
-          const newProject = await response.json();
-          this.projects.push(newProject);
-          this.renderProjects();
-        } else {
-          throw new Error('Failed to add project');
-        }
-      } catch (error) {
-        console.error('Error adding project:', error);
-        this.showErrorMessage('Failed to add project. Please try again.');
+      if (!response.ok) {
+        throw new Error('Failed to add project');
       }
+
+      const newProject = await response.json();
+      this.projects.push(newProject);
+      this.renderProjects();
+    } catch (error) {
+      console.error('Error adding project:', error);
+      this.showErrorMessage('Failed to add project. Please try again.');
     }
   }
 
   // Add Label
   async addLabel() {
     const labelName = prompt('Enter label name:');
-    if (labelName && !this.labels.some(l => l.name === labelName)) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/labels`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name: labelName })
-        });
+    if (!labelName || labelName.trim() === '') {
+      return;
+    }
+    
+    if (this.labels.some(l => l.name === labelName)) {
+      this.showErrorMessage('A label with this name already exists.');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/labels`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: labelName })
+      });
 
-        if (response.ok) {
-          const newLabel = await response.json();
-          this.labels.push(newLabel);
-          this.renderLabels();
-        } else {
-          throw new Error('Failed to add label');
-        }
-      } catch (error) {
-        console.error('Error adding label:', error);
-        this.showErrorMessage('Failed to add label. Please try again.');
+      if (!response.ok) {
+        throw new Error('Failed to add label');
       }
+
+      const newLabel = await response.json();
+      this.labels.push(newLabel);
+      this.renderLabels();
+    } catch (error) {
+      console.error('Error adding label:', error);
+      this.showErrorMessage('Failed to add label. Please try again.');
     }
   }
 
