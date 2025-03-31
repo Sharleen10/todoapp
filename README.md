@@ -1,12 +1,12 @@
 👋 Welcome! I'm Sharleen Shabangu
 
-Hello there! I'm thrilled to welcome you to my Task Master application it will help organize your life and boost your productivity. 
+Hello there! I'm thrilled to welcome you to my TaskTrek application it will help organize your life and boost your productivity. 
 
-**TaskMaster To-Do List Application**
+**TaskTrek To-Do List Application**
 
 **Overview**
 
-TaskMaster is a comprehensive, feature-rich to-do list application built with modern JavaScript (ES6+) on the frontend and a Node.js/Express/MongoDB backend. The application helps users organize tasks, manage priorities, and track deadlines effectively with robust data persistence.
+TaskTrek is a comprehensive, feature-rich to-do list application built with modern JavaScript (ES6+) on the frontend and a Node.js/Express/MongoDB backend. The application helps users organize tasks, manage priorities, and track deadlines effectively with robust data persistence.
 
 **Features**
 **Task Creation and Management**
