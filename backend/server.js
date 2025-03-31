@@ -1,4 +1,4 @@
-// Load environment variables from config.env
+// Load environment variables from .env
 require('dotenv').config();
 
 const express = require('express');
@@ -62,7 +62,6 @@ mongoose.connection.on('disconnected', () => {
 
 // Task Schema
 const TaskSchema = new mongoose.Schema({
-
   title: { type: String, required: true },
   description: { type: String },
   dueDate: { type: Date },
