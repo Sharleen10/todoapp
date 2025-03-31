@@ -24,9 +24,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'https://your-render-app-name.onrender.com' // Add this line (you'll update it later)
+    'http://localhost:5500', // For local development
+    'http://127.0.0.1:5500', // Alternative local development address
+    'https://todoapp-frontend-nm5y.onrender.com' // Production URL for frontend
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
