@@ -1,5 +1,5 @@
 // Load environment variables from config.env
-require('dotenv').config({ path: __dirname + '/config.env' });
+require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
