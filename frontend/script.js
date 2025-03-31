@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "https://todoapp-backend-ino9.onrender.com/api/v1"; // Base URL for API requests
+const API_BASE_URL = 'https://todoapp-backend-ino9.onrender.com/api';
 
 class TaskManager {
   constructor() {
