@@ -1,6 +1,11 @@
+👋 Welcome! I'm Sharleen Shabangu
 
+Hello there! I'm thrilled to welcome you to my Task Master application it will help organize your life and boost your productivity. 
 
-TaskMaster To-Do List Application
+**TaskMaster To-Do List Application**
+
+**Overview**
+
 TaskMaster is a comprehensive, feature-rich to-do list application built with modern JavaScript (ES6+) on the frontend and a Node.js/Express/MongoDB backend. The application helps users organize tasks, manage priorities, and track deadlines effectively with robust data persistence.
 
 **Features**
@@ -67,11 +72,11 @@ npm
 
 **Installation**
 
-1. Clone the repository:
+1. Clone the repository: https://github.com/Sharleen10/todoapp.git
 
 2. Install dependencies:
    npm install
-
+   npm install mongodb
 
 
 **Usage**
@@ -82,4 +87,22 @@ Filter tasks using the view options (All, Today, Upcoming, Completed)
 Click on a task to view and edit its details
 Mark tasks as complete by clicking the checkbox
 Delete tasks by clicking the delete icon
-Copy
+
+
+🚀 Deployment This todolist is hosted on: Render.com
+
+🚀 Live Demo
+
+You can view my portfolio live at: https://todoapp-frontend-nm5y.onrender.com/
+
+📧 Contact
+
+If you'd like to connect, feel free to reach out via:
+
+Email: sharleensshabangu@gmail.com
+
+LinkedIn: (https://www.linkedin.com/in/sharleen-shabangu-a6a1b220a)
+
+GitHub: https://github.com/Sharleen10/todoapp.git
+
+
