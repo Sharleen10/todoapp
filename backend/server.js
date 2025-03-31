@@ -23,9 +23,10 @@ const PORT = process.env.PORT || 5000;
 // CORS Configuration
 app.use(cors({
   origin: [
-    'http://localhost:3000',  // React frontend
-    'http://localhost:5500',  // Live Server
-    'http://127.0.0.1:5500'  // Alternative localhost
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'https://your-render-app-name.onrender.com' // Add this line (you'll update it later)
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
